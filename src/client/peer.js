@@ -57,7 +57,7 @@ export default class P2PTPeer {
 
   async send(data, id) {
     this.bw.up += data.byteLength || data.length
-    return this.p2pt.send(this.#connection, data)
+    return this.p2pt.send(this.#connection, data, id)
   }
 
   request(data) {
