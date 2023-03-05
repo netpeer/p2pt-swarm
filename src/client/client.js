@@ -47,6 +47,7 @@ export default class P2PTClient extends P2PT {
     // If a new peer, send message
     this.on('peerconnect', async (peer) => {
       this.#connections[peer.id] = await new P2PTPeer(peer, this)
+      pubsub.publish('peer:connected', this.#connections[peer.id])
       // console.log(peer.send(new TextEncoder().encode(JSON.stringify({data: {type: 'requestId', from: this.peerId}}))));
       // await this.#connections[peer.id].send(new TextEncoder().encode(JSON.stringify({type: 'requestId', from: this.peerId})))
 
