@@ -6,5 +6,24 @@
     "p2pt": "^1.5.1",
     "pako": "^2.1.0"
   },
-  "type": "module"
+  "type": "module",
+  "name": "@netpeer/p2pt-swarm",
+  "description": "",
+  "version": "1.0.0",
+  "main": "run-server.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/netpeer/p2pt-swarm.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/netpeer/p2pt-swarm/issues"
+  },
+  "homepage": "https://github.com/netpeer/p2pt-swarm#readme"
 }

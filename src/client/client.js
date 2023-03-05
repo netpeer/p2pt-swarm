@@ -12,19 +12,18 @@ export default class P2PTClient extends P2PT {
     down: 0
   }
 
-  static trackersAnnounceURLs = [
-    // "wss://tracker.openw/ebtorrent.com",
-    'wss://tracker.leofcoin.org'
-    // "wss://tracker.btorrent.xyz"
-  ]
+  // static trackersAnnounceURLs = [
+  //   // "wss://tracker.openw/ebtorrent.com",
+  //   'wss://peach.leofcoin.org'
+  //   // "wss://tracker.btorrent.xyz"
+  // ]
   static JSON_MESSAGE_IDENTIFIER = '^'
 
-  constructor(options = {}) {
-    
-    options.networkVersion = options.networkVersion || 'leofcoin:peach'
-    super(P2PTClient.trackersAnnounceURLs, options.networkVersion)
-    this.networkVersion = options.networkVersion
-    this.peerId = options.peerId
+  constructor(peerId, networkVersion = 'leofcoin:peach', stars = ['wss://peach.leofcoin.org']) {
+    super(stars, networkVersion)
+    this.stars = stars
+    this.networkVersion = networkVersion
+    this.peerId = peerId
 
 // If a tracker connection was successful
 this.on('trackerconnect', async (tracker, stats) => {
