@@ -50,7 +50,7 @@ export default class P2PTPeer {
 
     // console.log(new TextDecoder().decode(new Uint8Array(Object.values(JSON.parse(message.msg)))));
     const data = new Uint8Array(Object.values(JSON.parse(message.msg)))
-      pubsub.publish('peer:data', { id, data, from })
+      pubsub.publish('peer:data', { id, data, from, peer: this })
   
     this.bw.down += data.byteLength || data.length
   }
