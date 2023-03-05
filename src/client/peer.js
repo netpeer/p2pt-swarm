@@ -29,7 +29,7 @@ export default class P2PTPeer {
 
     this.#channelName = peer.channelName 
 
-    this.#peerId = options.peerId
+    this.#peerId = this.p2pt.peerId
     this.options = options
     return this.#init(options)
   }
@@ -43,15 +43,14 @@ export default class P2PTPeer {
   }
 
   _handleMessage(message) {
-
     message = JSON.parse(new TextDecoder().decode(message.slice(1)))
     // allow sharding (multiple peers share data)
     pubsub.publish('peernet:shard', message)
-    const { id } = message
+    const { id, from } = message
 
     // console.log(new TextDecoder().decode(new Uint8Array(Object.values(JSON.parse(message.msg)))));
     const data = new Uint8Array(Object.values(JSON.parse(message.msg)))
-      pubsub.publish('peer:data', { id, data, from: this.peerId })
+      pubsub.publish('peer:data', { id, data, from })
   
     this.bw.down += data.byteLength || data.length
   }

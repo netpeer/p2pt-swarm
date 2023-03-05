@@ -1,7 +1,9 @@
 import P2PT from "@leofcoin/p2pt";
 import P2PTPeer from "./peer.js";
 import LittlePubSub from "@vandeurenglenn/little-pubsub/index.js";
+
 if (!globalThis.pubsub) globalThis.pubsub = new LittlePubSub()
+
 export default class P2PTClient extends P2PT {
   #connections = {
 
@@ -17,14 +19,15 @@ export default class P2PTClient extends P2PT {
   //   'wss://peach.leofcoin.org'
   //   // "wss://tracker.btorrent.xyz"
   // ]
-  static JSON_MESSAGE_IDENTIFIER = '^'
+  // static JSON_MESSAGE_IDENTIFIER = '^'
 
   get connections() {
     return this.#connections || {}
   }
-  
+
   constructor(peerId, networkVersion = 'leofcoin:peach', stars = ['wss://peach.leofcoin.org']) {
-    super(stars, networkVersion)
+    super(stars, networkVersion, peerId)
+
     this.stars = stars
     this.networkVersion = networkVersion
     this.peerId = peerId
@@ -43,15 +46,10 @@ export default class P2PTClient extends P2PT {
 
     // If a new peer, send message
     this.on('peerconnect', async (peer) => {
-      console.log(peer.id);
-      console.log('id');
       this.#connections[peer.id] = await new P2PTPeer(peer, this)
-      // console.log(peer);
-      console.log(peer.id);
       // console.log(peer.send(new TextEncoder().encode(JSON.stringify({data: {type: 'requestId', from: this.peerId}}))));
       // await this.#connections[peer.id].send(new TextEncoder().encode(JSON.stringify({type: 'requestId', from: this.peerId})))
-      const id = await this.#connections[peer.id].request(new TextEncoder().encode(JSON.stringify({type: 'requestId', from: this.peerId})))
-      console.log({id});
+
       // this.send(peer, 'Hi').then(([peer, msg]) => {
       //   console.log('Got response : ' + msg)
 
