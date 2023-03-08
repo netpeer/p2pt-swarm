@@ -60,8 +60,9 @@ export default class P2PTPeer {
     return this.p2pt.send(this.#connection, data, id)
   }
 
-  request(data) {
-    return this.send(data)
+  async request(data) {
+    const [peer, msg] = await this.send(data)
+    return msg
   }
 
   #trySend({ size, id, chunks }) {
