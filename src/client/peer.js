@@ -1,14 +1,9 @@
 export default class P2PTPeer {
   #connected = false
-  #messageQue = []
-  #chunksQue = {}
   #channel
   id;
   #peerId;
   #channelName
-  #chunkSize = 16 * 1024 // 16384
-  #queRunning = false
-  #MAX_BUFFERED_AMOUNT = 16 * 1024 * 1024
   initiator = false
   state;
   #connection
@@ -31,15 +26,6 @@ export default class P2PTPeer {
 
     this.#peerId = this.p2pt.peerId
     this.options = options
-    return this.#init(options)
-  }
-
-  async #init(options) {
-    if (!globalThis.pako) {
-      const importee = await import('pako')
-      globalThis.pako = importee.default
-    }
-    return this
   }
 
   _handleMessage(message) {
@@ -63,49 +49,6 @@ export default class P2PTPeer {
   async request(data) {
     const [peer, msg] = await this.send(data)
     return msg
-  }
-
-  #trySend({ size, id, chunks }) {
-    let offset = 0
-
-    for (const chunk of chunks) {
-      const start = offset
-      const end = offset + chunk.length
-
-      const message = new TextEncoder().encode(JSON.stringify({ size, id, chunk, start, end }));
-      this.#messageQue.push(message)
-    }
-
-    if (!this.queRunning) return this.#runQue()
-  }
-
-  async #runQue() {
-    this.#queRunning = true
-    if (this.#messageQue.length > 0 && this.#channel?.bufferedAmount + this.#messageQue[0]?.length < this.#MAX_BUFFERED_AMOUNT) {
-      const message = this.#messageQue.shift()
-      await this.#connection.send(message);
-      if (this.#messageQue.length > 0) return this.#runQue()
-    } else {
-      return setTimeout(() => this.#runQue(), 50)
-    }
-  }
-
-  splitMessage(message) {
-    const chunks = []
-    message = pako.deflate(message)
-    const size = message.byteLength || message.length
-    let offset = 0
-    return new Promise((resolve, reject) => {
-      const splitMessage = () => {
-        const chunk = message.slice(offset, offset + this.#chunkSize > size ? size : offset + this.#chunkSize)
-        offset += this.#chunkSize
-        chunks.push(chunk)
-        if (offset < size) return splitMessage()
-        else resolve({chunks, size})
-      }
-
-      splitMessage()
-    })
   }
 
   get peerId() {
