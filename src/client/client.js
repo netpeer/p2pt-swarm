@@ -32,6 +32,7 @@ export default class P2PTClient extends P2PT {
       })
 
       promises = await Promise.allSettled(promises)
+      pubsub.publish('star:connected', tracker)
     })
 
     this.on('peerconnect', async (peer) => {
