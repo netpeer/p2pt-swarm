@@ -10,8 +10,20 @@
   "name": "@netpeer/p2pt-swarm",
   "description": "",
   "version": "1.1.6",
-  "main": "run-server.js",
   "devDependencies": {},
+  "exports": {
+    ".": {
+      "import": "./src/client/client.js"
+    },
+    "./server": {
+      "import": "./src/server/server.js"
+    },
+    "./client": {
+      "import": "./src/client/client.js"
+    },
+    "./server.js": "./src/server/server.js",
+    "./client.js": "./src/client/client.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -21,7 +33,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/netpeer/p2pt-swarm/issues"
   },

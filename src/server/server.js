@@ -1,46 +1,42 @@
 
 import {Server} from 'bittorrent-tracker'
+
 export default class {
   constructor(port) {
+    this.port = port
+    
+    this.server = new Server({
+      udp: false,
+      http: true,
+      ws: true,
+      stats: false
+    })
 
-var server = new Server({
-  udp: false, // enable udp server? [default=true]
-  http: true, // enable http server? [default=true]
-  ws: true, // enable websocket server? [default=true]
-  stats: false // enable web-based statistics? [default=true]
-})
+    this.server.on('warning', this.#warning.bind(this))
+    this.server.on('listening', this.#listening.bind(this))
+    this.server.on('start', this.#start.bind(this))
+    this.server.on('update', this.#update.bind(this))
 
-console.log(server);
+    this.server.listen(this.port || '5001', '0.0.0.0')
+  }
 
-server.on('error', function (err) {
-  // fatal server error!
-  console.log(err.message)
-})
+  #start(id) {
+    console.log('got start message from ' + id)
+  }
 
-server.on('warning', function (err) {
-  // client sent bad data. probably not a problem, just a buggy client.
-  console.log(err.message)
-})
+  #update(id) {
+    console.log('update from ' + id)
+  }
 
-server.on('listening', function () {
-  // fired when all requested servers are listening
-  console.log('listening on http port:' + server.http.address().port)
-})
+  #listening() {
+    console.log('listening on http port:' + this.server.http.address().port)
+  }
 
-// listen for individual tracker messages from peers:
+  #warning(warning) {
+    console.warn(warning.message)
+  }
 
-server.on('start', function (addr) {
-  console.log('got start message from ' + addr)
-})
-
-server.on('complete', function (addr) {})
-server.on('update', function (addr) {
-  console.log('update from ' + addr)
-})
-server.on('stop', function (addr) {})
-
-// start tracker server listening! Use 0 to listen on a random free port.
-server.listen(port || '5001', '0.0.0.0')
-
+  #error(error) {
+    console.error(error.message)
   }
 }
