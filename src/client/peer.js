@@ -1,6 +1,4 @@
 export default class P2PTPeer {
-  #connected = false
-  #channel
   id;
   #peerId;
   #channelName
@@ -10,6 +8,10 @@ export default class P2PTPeer {
 
   get channelName() {
     return this.#channelName
+  }
+
+  get connected() {
+    return this.#connection.connected
   }
 
   constructor(peer, p2pt, options = {}) {
