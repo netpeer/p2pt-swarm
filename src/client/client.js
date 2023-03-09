@@ -5,7 +5,7 @@ import LittlePubSub from "@vandeurenglenn/little-pubsub/index.js";
 if (!globalThis.pubsub) globalThis.pubsub = new LittlePubSub()
 
 export default class P2PTClient extends P2PT {
-  #connections = {
+  #discovered = {
 
   }
 
@@ -14,15 +14,8 @@ export default class P2PTClient extends P2PT {
     down: 0
   }
 
-  // static trackersAnnounceURLs = [
-  //   // "wss://tracker.openw/ebtorrent.com",
-  //   'wss://peach.leofcoin.org'
-  //   // "wss://tracker.btorrent.xyz"
-  // ]
-  // static JSON_MESSAGE_IDENTIFIER = '^'
-
-  get connections() {
-    return this.#connections || {}
+  get discovered() {
+    return this.#discovered || {}
   }
 
   constructor(peerId, networkVersion = 'leofcoin:peach', stars = ['wss://peach.leofcoin.org']) {
@@ -32,60 +25,24 @@ export default class P2PTClient extends P2PT {
     this.networkVersion = networkVersion
     this.peerId = peerId
 
-    // If a tracker connection was successful
     this.on('trackerconnect', async (tracker, stats) => {
-      // console.log({tracker});
       const peers = tracker.peers
-      // console.log(peers);
-      for (const [id, peer] of Object.entries(peers)) {
-        this.#connections[id] = await new P2PTPeer(peer, this)
-        // promises.push(() => peer.send('request'))
-        // this.peers.includes(peerId)
-      }
+      let promises = Object.entries(peers).map(async ([id, peer]) => {
+        this.#discovered[id] = await new P2PTPeer(peer, this)
+      })
+
+      promises = await Promise.allSettled(promises)
     })
 
-    // If a new peer, send message
     this.on('peerconnect', async (peer) => {
-      this.#connections[peer.id] = await new P2PTPeer(peer, this)
-      pubsub.publish('peer:connected', this.#connections[peer.id])
-      // console.log(peer.send(new TextEncoder().encode(JSON.stringify({data: {type: 'requestId', from: this.peerId}}))));
-      // await this.#connections[peer.id].send(new TextEncoder().encode(JSON.stringify({type: 'requestId', from: this.peerId})))
-
-      // this.send(peer, 'Hi').then(([peer, msg]) => {
-      //   console.log('Got response : ' + msg)
-
-      // this.send(peer, 'request')
-      //   return peer.respond('Bye')
-      // }).then(([peer, msg]) => {
-      //   console.log('Got response2 : ' + msg)
-      // })
+      this.#discovered[peer.id] = await new P2PTPeer(peer, this)
+      pubsub.publish('peer:discovered', this.#discovered[peer.id])
     })
-
-    // If message received from peer
-    // this.on('msg', async (peer, msg) => {
-    //   console.log({msg});
-    //   const hasPeer = this.#connections[peer.id]
-    //   if (!hasPeer) this.#connections[peer.id] = await new P2PTPeer(peer, this)
-    // // data.message = new Uint8Array()
-    //   this.#connections[peer.id]?._handleMessage(new Uint8Array(Object.values(msg)))
-    //   if (msg.type === 'requestId') peer.respond(this.peerId)
-    //   console.log(`Got message from ${peer.id} : ${msg}`)
-    //   if (msg === 'Hi') {
-    //     peer.respond('Hello !').then(([peer, msg]) => {
-    //       peer.respond('Bye !')
-    //     })
-    //   }
-    // })
 
     this.on('data', async (peer, data) => {
-      // console.log(peer.id);
-      // data = data.slice(1)
-      // console.log(data);
-      const hasPeer = this.#connections[peer.id]
-      if (!hasPeer) this.#connections[peer.id] = await new P2PTPeer(peer, this)
-    // data.message = new Uint8Array()
+      const hasPeer = this.#discovered[peer.id]
+      if (!hasPeer) this.#discovered[peer.id] = await new P2PTPeer(peer, this)
       this.#connections[peer.id]?._handleMessage(new Uint8Array(Object.values(data)))
-      console.log(this.#connections[peer.id]?.bw);
       this.bw.down += data.length || data.byteLength
     })
     console.log('P2PT started. My peer id : ' + this._peerId)
