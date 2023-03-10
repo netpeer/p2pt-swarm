@@ -14,6 +14,14 @@ export default class P2PTPeer {
     return this.#connection.connected
   }
 
+  get connectionStats() {
+    return {
+      family: this.#connection.remoteFamily || this.#connection.localFamily || 'ipv4',
+      address: this.#connection.remoteAddress || this.#connection.localAddress || '127.0.0.1',
+      port: this.#connection.remotePort || this.#connection.localPort || '0000',
+    }
+  }
+
   constructor(peer, p2pt, options = {}) {
     this.#connection = peer
     this.p2pt = p2pt
