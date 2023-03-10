@@ -44,11 +44,11 @@ export default class P2PTClient extends P2PT {
       pubsub.publish('peer:left', this.#discovered[peer.id])
     })
 
-    this.on('msg', async (peer, data) => {
+    this.on('msg', async (peer, data, id, from) => {
       const hasPeer = this.#discovered[peer.id]
       if (!hasPeer) this.#discovered[peer.id] = await new P2PTPeer(peer, this)
 
-      this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(data)))
+      this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(data)), id, from)
       this.bw.down += data.length || data.byteLength
     })
 
