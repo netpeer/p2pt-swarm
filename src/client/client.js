@@ -52,8 +52,11 @@ export default class P2PTClient extends P2PT {
       const hasPeer = this.#discovered[peer.id]
       if (!hasPeer) this.#discovered[peer.id] = await new P2PTPeer(peer, this)
 
-      this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(data)), id, from)
-      this.bw.down += data.length || data.byteLength
+      if (this.#discovered[peer.id].connected) {
+        this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(data)), id, from)
+        this.bw.down += data.length || data.byteLength
+      }
+      
     })
 
     this.on('data', async (peer, data) => {
