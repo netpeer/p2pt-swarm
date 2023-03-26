@@ -27,7 +27,7 @@ export default class P2PTClient extends P2PT {
 
     this.on('trackerconnect', async (tracker, stats) => {
       const peers = await this.requestMorePeers()
-      let promises = Object.vales(peers).map(async (peer) => {
+      let promises = Object.values(peers).map(async (peer) => {
 				const hasPeer = this.#discovered[peer.id];
 				if (!hasPeer) this.#discovered[peer.id] = await new P2PTPeer(peer, this);
         if (this.#discovered[peer.id].connected) pubsub.publish('peer:discovered', this.#discovered[peer.id]);
