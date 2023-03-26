@@ -26,23 +26,26 @@ export default class P2PTClient extends P2PT {
     this.peerId = peerId
 
     this.on('trackerconnect', async (tracker, stats) => {
-      // const peers = await this.requestMorePeers()
-      // let promises = Object.entries(peers).map(async ([id, peer]) => {
-			// 	const hasPeer = this.#discovered[peer.id];
-			// 	if (!hasPeer) this.#discovered[peer.id] = await new P2PTPeer(peer, this);
-      //   pubsub.publish('peer:discovered', this.#discovered[id]);
-      // })
-      // promises = await Promise.allSettled(promises)
+      const peers = await this.requestMorePeers()
+      let promises = Object.vales(peers).map(async (peer) => {
+				const hasPeer = this.#discovered[peer.id];
+				if (!hasPeer) this.#discovered[peer.id] = await new P2PTPeer(peer, this);
+        if (this.#discovered[peer.id].connected) pubsub.publish('peer:discovered', this.#discovered[peer.id]);
+      })
+      promises = await Promise.allSettled(promises)
       pubsub.publish('star:connected', tracker)
     })
 
     this.on('peerconnect', async (peer) => {
       this.#discovered[peer.id] = await new P2PTPeer(peer, this)
-      pubsub.publish('peer:discovered', this.#discovered[peer.id])
+      if (this.#discovered[peer.id].connected) pubsub.publish('peer:discovered', this.#discovered[peer.id])
     })
 
     this.on('peerclose', async (peer) => {
-      pubsub.publish('peer:left', this.#discovered[peer.id])
+      if (this.#discovered[peer.id]) {
+        delete this.#discovered[peer.id]
+        pubsub.publish('peer:left', this.#discovered[peer.id])
+      }
     })
 
     this.on('msg', async (peer, data, id, from) => {
