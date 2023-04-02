@@ -8,11 +8,27 @@ export default class P2PTPeer {
   state;
   #connection
 
+  get id() {
+    return this.#connection.id
+  }
+
   get channelName() {
     return this.#channelName
   }
 
   get connected() {
+    let connected = false
+    for (const channelId of Object.keys(this.p2pt.peers[this.id])) {
+      if (this.p2pt.peers[this.id][channelName].connected) {
+        connected = true
+        break
+      }
+    }
+    return connected
+  }
+
+  // check if channel is connected, if not, consider changing to a connected channel
+  get channelConnected() {
     return this.#connection.connected
   }
 
