@@ -9,6 +9,8 @@ export default class P2PTClient extends P2PT {
 
   }
 
+  #que = new Map()
+
   bw = {
     up: 0,
     down: 0
@@ -37,8 +39,22 @@ export default class P2PTClient extends P2PT {
     })
 
     this.on('peerconnect', async (peer) => {
-      this.#discovered[peer.id] = await new P2PTPeer(peer, this)
+      if (!this.#discovered[peer.id]) this.#discovered[peer.id] = await new P2PTPeer(peer, this)
       if (this.#discovered[peer.id].connected) pubsub.publish('peer:discovered', this.#discovered[peer.id])
+
+      if (this.#que.has(peer.id)) {
+        const set = this.#que.get(peer.id)
+
+        for (const item of set) {
+          if (this.#discovered[peer.id]?.connected) {
+            this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(item.data)), item.id, item.from)
+            this.bw.down += item.data.length || item.data.byteLength
+            set.delete(item)
+          }
+        }
+        if (set.size === 0) this.#que.delete(peer.id)
+        else this.#que.set(peer.id, set)
+      }
     })
 
     this.on('peerclose', async (peer) => {
@@ -49,14 +65,18 @@ export default class P2PTClient extends P2PT {
     })
 
     this.on('msg', async (peer, data, id, from) => {
-      const hasPeer = this.#discovered[peer.id]
-      if (!hasPeer) this.#discovered[peer.id] = await new P2PTPeer(peer, this)
-
-      if (this.#discovered[peer.id].connected) {
+      if (!this.#discovered[peer.id]) {
+        if (this.#que.has(peer.id)) {
+          const set = this.#que.get(peer.id)
+          set.add({peer, data, id, from})
+          this.#que.set(peer.id, set)
+        } else {
+          this.#que.set(peer.id, new Set([{peer, data, id, from}]))
+        }
+			} else if (this.#discovered[peer.id]?.connected) {
         this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(data)), id, from)
         this.bw.down += data.length || data.byteLength
       }
-      
     })
 
     this.on('data', async (peer, data) => {
