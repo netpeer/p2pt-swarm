@@ -65,7 +65,9 @@ export default class P2PTClient extends P2PT {
     })
 
     this.on('msg', async (peer, data, id, from) => {
-      if (!this.#discovered[peer.id] || this.#discovered[peer.id]?.connected === false) {
+      if (!this.#discovered[peer.id] ||
+          this.#discovered[peer.id]?.connected === false ||
+          this.#discovered[peer.id]?.connected === undefined) {
         if (this.#que.has(peer.id)) {
           const set = this.#que.get(peer.id);
           set.add({peer, data, id, from});
