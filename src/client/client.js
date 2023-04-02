@@ -45,7 +45,7 @@ export default class P2PTClient extends P2PT {
       if (this.#que.has(peer.id)) {
         const set = this.#que.get(peer.id)
 
-        for (const item of set) {
+        for (const item of set.values()) {
           if (this.#discovered[peer.id]?.connected) {
             this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(item.data)), item.id, item.from)
             this.bw.down += item.data.length || item.data.byteLength
