@@ -65,17 +65,17 @@ export default class P2PTClient extends P2PT {
     })
 
     this.on('msg', async (peer, data, id, from) => {
-      if (!this.#discovered[peer.id]) {
+      if (!this.#discovered[peer.id] || this.#discovered[peer.id]?.connected === false) {
         if (this.#que.has(peer.id)) {
-          const set = this.#que.get(peer.id)
-          set.add({peer, data, id, from})
-          this.#que.set(peer.id, set)
+          const set = this.#que.get(peer.id);
+          set.add({peer, data, id, from});
+          this.#que.set(peer.id, set);
         } else {
-          this.#que.set(peer.id, new Set([{peer, data, id, from}]))
+          this.#que.set(peer.id, new Set([{peer, data, id, from}]));
         }
-			} else if (this.#discovered[peer.id]?.connected) {
-        this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(data)), id, from)
-        this.bw.down += data.length || data.byteLength
+			} else if (this.#discovered[peer.id]?.connected === true) {
+        this.#discovered[peer.id]?._handleMessage(new Uint8Array(Object.values(data)), id, from);
+        this.bw.down += data.length || data.byteLength;
       }
     })
 
