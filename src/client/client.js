@@ -30,7 +30,7 @@ export default class P2PTClient extends P2PT {
       let promises = Object.entries(peers).map(async ([id, peer]) => {
 				const hasPeer = this.#discovered[id];
 				if (!hasPeer) this.#discovered[id] = await new P2PTPeer(peer, this);
-        if (this.#discovered[id].connected) pubsub.publish('peer:discovered', this.#discovered[id]);
+        if (!hasPeer && this.#discovered[id].connected) pubsub.publish('peer:discovered', this.#discovered[id]);
       })
       promises = await Promise.allSettled(promises)
       pubsub.publish('star:connected', tracker)

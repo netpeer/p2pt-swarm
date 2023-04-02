@@ -3,14 +3,12 @@
     "@koush/wrtc": "^0.5.3",
     "@leofcoin/p2pt": "^1.5.1",
     "@vandeurenglenn/little-pubsub": "^1.4.2",
-    "p2pt": "^1.5.1",
     "pako": "^2.1.0"
   },
   "type": "module",
   "name": "@netpeer/p2pt-swarm",
   "description": "",
   "version": "1.1.22",
-  "devDependencies": {},
   "exports": {
     ".": {
       "import": "./src/client/client.js"
