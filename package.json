@@ -11,18 +11,22 @@
   "version": "1.1.28",
   "exports": {
     ".": {
-      "import": "./src/client/client.js"
+      "import": "./exports/client.js",
+      "types": "./exports/client/client.d.ts"
     },
     "./server": {
-      "import": "./src/server/server.js"
+      "import": "./exports/server.js",
+      "types": "./exports/server/server.d.ts"
     },
     "./client": {
-      "import": "./src/client/client.js"
+      "import": "./exports/client.js",
+      "types": "./exports/client/client.d.ts"
     },
-    "./server.js": "./src/server/server.js",
-    "./client.js": "./src/client/client.js"
+    "./server.js": "./exports/server.js",
+    "./client.js": "./exports/client.js"
   },
   "scripts": {
+    "build": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -35,5 +39,11 @@
   "bugs": {
     "url": "https://github.com/netpeer/p2pt-swarm/issues"
   },
-  "homepage": "https://github.com/netpeer/p2pt-swarm#readme"
+  "homepage": "https://github.com/netpeer/p2pt-swarm#readme",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.0.2",
+    "@rollup/plugin-typescript": "^11.1.0",
+    "rollup": "^3.20.2",
+    "tslib": "^2.5.0"
+  }
 }
