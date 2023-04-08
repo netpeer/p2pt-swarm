@@ -40,7 +40,6 @@ class P2PTPeer {
     constructor(peer, p2pt, options = {}) {
         this.#connection = peer;
         this.p2pt = p2pt;
-        this.id = options.id || peer.id;
         this.localPeerId = this.p2pt.peerId;
         this.bw = {
             up: 0,
