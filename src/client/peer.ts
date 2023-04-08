@@ -1,5 +1,8 @@
+
+import P2PT from "@leofcoin/p2pt";
+
 export default class P2PTPeer {
-  id;
+  p2pt: P2PT;
   remotePeerId;
   localPeerId;
   #peerId;
@@ -19,7 +22,7 @@ export default class P2PTPeer {
   get connected() {
     let connected = false
     for (const channelId of Object.keys(this.p2pt.peers[this.id])) {
-      if (this.p2pt.peers[this.id][channelName].connected) {
+      if (this.p2pt.peers[this.id][channelId].connected) {
         connected = true
         break
       }

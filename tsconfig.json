@@ -4,6 +4,7 @@
     "moduleResolution": "nodenext"
   },
   "include": [
+    "./node_modules/@leofcoin/p2pt/p2pt.d.ts",
     "src/**/*.ts"
   ]
 }
