@@ -9,6 +9,7 @@
   "name": "@netpeer/p2pt-swarm",
   "description": "",
   "version": "1.1.30",
+  "browser": "./exports/browser/client.js",
   "exports": {
     ".": {
       "import": "./exports/client.js",
@@ -23,7 +24,8 @@
       "types": "./exports/client/client.d.ts"
     },
     "./server.js": "./exports/server.js",
-    "./client.js": "./exports/client.js"
+    "./client.js": "./exports/client.js",
+    "./browser": "./exports/browser/client.js"
   },
   "scripts": {
     "build": "rollup -c",
@@ -41,9 +43,13 @@
   },
   "homepage": "https://github.com/netpeer/p2pt-swarm#readme",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-typescript": "^11.1.0",
     "rollup": "^3.20.2",
+    "rollup-plugin-modify": "^3.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
     "tslib": "^2.5.0"
   }
 }

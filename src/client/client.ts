@@ -1,4 +1,4 @@
-import P2PT from "@leofcoin/p2pt";
+// @P2PT
 import P2PTPeer from "./peer.js";
 import LittlePubSub from "@vandeurenglenn/little-pubsub/index.js";
 

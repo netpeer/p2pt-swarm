@@ -1,4 +1,3 @@
-import P2PT from '@leofcoin/p2pt';
 import LittlePubSub from '@vandeurenglenn/little-pubsub/index.js';
 
 class P2PTPeer {
@@ -67,6 +66,7 @@ class P2PTPeer {
     }
 }
 
+// @P2PT
 if (!globalThis.pubsub)
     globalThis.pubsub = new LittlePubSub();
 class P2PTClient extends P2PT {

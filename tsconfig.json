@@ -2,9 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "nodenext",
-    "declaration": true,
-    "declarationDir": "exports"
+    "moduleResolution": "nodenext"
   },
   "include": [
     "./node_modules/@leofcoin/p2pt/p2pt.d.ts",
