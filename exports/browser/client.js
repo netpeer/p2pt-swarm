@@ -15,6 +15,10 @@ class P2PTPeer {
     }
     get connected() {
         let connected = false;
+        if (this.p2pt.peers.length === 0)
+            return connected;
+        if (!this.p2pt.peers[this.id])
+            return connected;
         for (const channelId of Object.keys(this.p2pt.peers[this.id])) {
             if (this.p2pt.peers[this.id][channelId].connected) {
                 connected = true;
