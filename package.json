@@ -8,7 +8,7 @@
   "type": "module",
   "name": "@netpeer/p2pt-swarm",
   "description": "",
-  "version": "1.1.31",
+  "version": "1.1.32",
   "browser": "./exports/browser/client.js",
   "exports": {
     ".": {
