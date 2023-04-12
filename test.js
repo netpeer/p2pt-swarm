@@ -1,5 +1,5 @@
-import Client from './src/client/client.js'
-import Server from './src/server/server.js'
+import Client from './exports/client.js'
+import Server from './exports/server.js'
 
 // const server = new Server(5001)
 //  new Server(5002)
