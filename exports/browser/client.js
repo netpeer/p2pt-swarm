@@ -10614,7 +10614,8 @@ let P2PT$1 = class P2PT extends require$$0$5 {
                 if (!this.peers[peer.id]) {
                     newpeer = true;
                     this.peers[peer.id] = {};
-                    this.responseWaiting[peer.id] = {};
+                    if (!this.responseWaiting[peer.id])
+                        this.responseWaiting[peer.id] = {};
                 }
                 /**
                  * Multiple data channels to one peer is possible
@@ -10645,7 +10646,7 @@ let P2PT$1 = class P2PT extends require$$0$5 {
                             /**
                              * If there's someone waiting for a response, call them
                              */
-                            if (this.responseWaiting[peer.id][data.id]) {
+                            if (this.responseWaiting[peer.id] && this.responseWaiting[peer.id][data.id]) {
                                 this.responseWaiting[peer.id][data.id]([peer, msg]);
                                 delete this.responseWaiting[peer.id][data.id];
                             }
