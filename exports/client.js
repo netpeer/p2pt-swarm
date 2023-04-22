@@ -1,5 +1,5 @@
 import P2PT from '@leofcoin/p2pt';
-import LittlePubSub from '@vandeurenglenn/little-pubsub/index.js';
+import LittlePubSub from '@vandeurenglenn/little-pubsub';
 
 class P2PTPeer {
     p2pt;

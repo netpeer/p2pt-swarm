@@ -1,6 +1,6 @@
 // @P2PT
 import P2PTPeer from "./peer.js";
-import LittlePubSub from "@vandeurenglenn/little-pubsub/index.js";
+import LittlePubSub from "@vandeurenglenn/little-pubsub";
 
 if (!globalThis.pubsub) globalThis.pubsub = new LittlePubSub()
 
