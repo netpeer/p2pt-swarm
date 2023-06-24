@@ -1,5 +1,3 @@
-import { inflate, deflate } from 'pako';
-
 class P2PTPeer {
     p2pt;
     remotePeerId;
@@ -55,13 +53,13 @@ class P2PTPeer {
         this.options = options;
     }
     async _handleMessage(data, id, from) {
-        data = await inflate(data);
+        // data = await inflate(data)
         // console.log(new TextDecoder().decode(new Uint8Array(Object.values(JSON.parse(message.msg)))));
         globalThis.pubsub.publish('peer:data', { id, data, from, peer: this });
         this.bw.down += data.byteLength || data.length;
     }
     async send(data, id) {
-        data = await deflate(data);
+        // data = await deflate(data)
         this.bw.up += data.byteLength || data.length;
         return this.p2pt.send(this.#connection, data, id);
     }

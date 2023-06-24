@@ -3,7 +3,6 @@ import P2PTPeer from './peer.js';
 import LittlePubSub from '@vandeurenglenn/little-pubsub';
 import { fromBase58 } from '@vandeurenglenn/typed-array-utils';
 import '@vandeurenglenn/base58';
-import 'pako';
 
 if (!globalThis.pubsub)
     globalThis.pubsub = new LittlePubSub();

@@ -1,6 +1,5 @@
 import LittlePubSub from '@vandeurenglenn/little-pubsub';
 import P2PTClient from "./client.js";
-import { inflate, deflate } from 'pako'
 
 export declare namespace globalThis {
   var pubsub: LittlePubSub
@@ -72,7 +71,7 @@ export default class P2PTPeer {
   }
 
   async _handleMessage(data, id, from) {
-    data = await inflate(data)
+    // data = await inflate(data)
     // console.log(new TextDecoder().decode(new Uint8Array(Object.values(JSON.parse(message.msg)))));
     globalThis.pubsub.publish('peer:data', { id, data, from, peer: this })
   
@@ -80,7 +79,7 @@ export default class P2PTPeer {
   }
 
   async send(data, id?: string) {
-    data = await deflate(data)
+    // data = await deflate(data)
     this.bw.up += data.byteLength || data.length
     return this.p2pt.send(this.#connection, data, id)
   }
