@@ -12,9 +12,6 @@ export default [{
     format: 'es'
   }],
   plugins: [
-    modify({
-      '// @P2PT': "import P2PT from '@leofcoin/p2pt'"
-    }),
     typescript({
       compilerOptions: {
         declaration: true,
@@ -34,8 +31,9 @@ export default [{
   ],
   plugins: [
     builtins(),
+    
     modify({
-      '// @P2PT': p2pt.toString()
+      "import P2PT from '@leofcoin/p2pt'": p2pt.toString()
     }),
     nodeResolve({
       preferBuiltins: false,

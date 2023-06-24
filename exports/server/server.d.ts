@@ -1,4 +1,7 @@
+import { Server } from 'bittorrent-tracker';
 export default class {
     #private;
-    constructor(port: any);
+    server: Server;
+    port: number;
+    constructor(port: number);
 }

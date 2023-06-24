@@ -2,7 +2,10 @@
 import {Server} from 'bittorrent-tracker'
 
 export default class {
-  constructor(port) {
+  server: Server
+  port: number
+
+  constructor(port: number) {
     this.port = port
     
     this.server = new Server({
@@ -20,11 +23,11 @@ export default class {
     this.server.listen(this.port || '5001', '0.0.0.0')
   }
 
-  #start(id) {
+  #start(id: string) {
     console.log('got start message from ' + id)
   }
 
-  #update(id) {
+  #update(id: string) {
     console.log('update from ' + id)
   }
 

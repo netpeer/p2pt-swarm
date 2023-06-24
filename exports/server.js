@@ -1,6 +1,8 @@
 import { Server } from 'bittorrent-tracker';
 
 class server {
+    server;
+    port;
     constructor(port) {
         this.port = port;
         this.server = new Server({

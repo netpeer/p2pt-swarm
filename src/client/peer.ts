@@ -1,8 +1,12 @@
+import LittlePubSub from '@vandeurenglenn/little-pubsub';
+import P2PTClient from "./client.js";
+import { inflate, deflate } from 'pako'
 
-import P2PT from "@leofcoin/p2pt";
-
+export declare namespace globalThis {
+  var pubsub: LittlePubSub
+}
 export default class P2PTPeer {
-  p2pt: P2PT;
+  p2pt: P2PTClient;
   remotePeerId;
   localPeerId;
   #peerId;
@@ -10,6 +14,11 @@ export default class P2PTPeer {
   initiator = false
   state;
   #connection
+  bw: {
+    up: number,
+    down: number
+  }
+  options: {}
 
   get id() {
     return this.#connection.id
@@ -21,7 +30,7 @@ export default class P2PTPeer {
 
   get connected() {
     let connected = false
-    if (this.p2pt.peers.length === 0) return connected
+    if (Object.keys(this.p2pt.peers).length === 0) return connected
     if (!this.p2pt.peers[this.id]) return connected
     
     for (const channelId of Object.keys(this.p2pt.peers[this.id])) {
@@ -46,7 +55,7 @@ export default class P2PTPeer {
     }
   }
 
-  constructor(peer, p2pt, options = {}) {
+  constructor(peer, p2pt: P2PTClient, options = {}) {
     this.#connection = peer
     this.p2pt = p2pt
     this.localPeerId = this.p2pt.peerId
@@ -62,19 +71,22 @@ export default class P2PTPeer {
     this.options = options
   }
 
-  _handleMessage(data, id, from) {
+  async _handleMessage(data, id, from) {
+    // data = await inflate(data)
     // console.log(new TextDecoder().decode(new Uint8Array(Object.values(JSON.parse(message.msg)))));
-    pubsub.publish('peer:data', { id, data, from, peer: this })
+    globalThis.pubsub.publish('peer:data', { id, data, from, peer: this })
   
     this.bw.down += data.byteLength || data.length
   }
 
-  async send(data, id) {
+  async send(data, id?: string) {
+    // data = await deflate(data)
     this.bw.up += data.byteLength || data.length
     return this.p2pt.send(this.#connection, data, id)
   }
 
   async request(data) {
+    // @ts-ignore
     const [peer, msg] = await this.send(data)
     return msg
   }
