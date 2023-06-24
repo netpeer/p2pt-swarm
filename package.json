@@ -17,7 +17,7 @@
       "import": "./exports/client.js",
       "types": "./exports/client/client.d.ts"
     },
-    "./peers": {
+    "./peer": {
       "import": "./exports/peer.js",
       "types": "./exports/client/peer.d.ts"
     },
