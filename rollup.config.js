@@ -6,7 +6,7 @@ import modify from "rollup-plugin-modify";
 import { readFile } from 'fs/promises'
 const p2pt = await readFile('./node_modules/@leofcoin/p2pt/exports/browser/p2pt.umd.js')
 export default [{
-  input: ['./src/client/client.ts'],
+  input: ['./src/client/client.ts', './src/client/peer.ts'],
   output: [{
     dir: 'exports',
     format: 'es'
@@ -20,7 +20,7 @@ export default [{
     })
   ]
 }, {
-  input: ['./src/client/client.ts'],
+  input: ['./src/client/client.ts', './src/client/peer.ts'],
   output: [{
     dir: 'exports/browser',
     format: 'es',
