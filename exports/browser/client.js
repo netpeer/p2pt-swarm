@@ -250,6 +250,30 @@ base(ALPHABET);
 
 const fromBase58 = (string) => base58$1.decode(string);
 
+// todo only one star needed, no need to have one for each network
+// unless we change anything to the star protocoll
+// version diferences should be handled in the chain
+// maybe a good way to handle could be in p2pt-swarm
+var networks = {
+    leofcoin: {
+        mainnet: {
+            // ports don't really matter since it is favorable to have it begind a ngninx proxy but if we change something to the proto it's easier maybe?
+            port: 44444,
+            // todo a versionhash would be nice to have as a double check?
+            versionHash: '0',
+            // a short description identifying the version
+            description: 'Main net current version',
+            stars: ['wss://star.leofcoin.org'] // todo webrtc and bittorent stars
+        },
+        peach: {
+            port: 44444,
+            description: 'Main testnet: latest step before merging into main',
+            versionHash: '1',
+            stars: ['wss://star.leofcoin.org'] // todo webrtc and bittorent stars
+        }
+    }
+};
+
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f();}else if(typeof define==="function"&&define.amd){define([],f);}else {var g;if(typeof window!=="undefined"){g=window;}else if(typeof global!=="undefined"){g=global;}else if(typeof self!=="undefined"){g=self;}else {g=this;}g.P2PT = f();}})(function(){return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t);}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 
 var WebSocketTracker = require('bittorrent-tracker/lib/client/websocket-tracker.js');
@@ -10572,7 +10596,7 @@ class P2PTClient extends P2PT {
     get discovered() {
         return this.#discovered || {};
     }
-    constructor(peerId, networkVersion = 'leofcoin:peach', stars = ['wss://peach.leofcoin.org']) {
+    constructor(peerId, networkVersion = 'leofcoin:peach', stars = networks.leofcoin.peach.stars) {
         // @ts-ignore
         super(stars, networkVersion, fromBase58(peerId));
         this.stars = stars;

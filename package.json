@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@koush/wrtc": "^0.5.3",
+    "@leofcoin/networks": "^1.1.1",
     "@leofcoin/p2pt": "^1.5.1",
     "@vandeurenglenn/little-pubsub": "^1.4.2",
     "@vandeurenglenn/typed-array-utils": "^1.2.0",

@@ -3,6 +3,7 @@ import P2PTPeer from './peer.js';
 import LittlePubSub from '@vandeurenglenn/little-pubsub';
 import { fromBase58 } from '@vandeurenglenn/typed-array-utils';
 import '@vandeurenglenn/base58';
+import networks from '@leofcoin/networks';
 
 if (!globalThis.pubsub)
     globalThis.pubsub = new LittlePubSub();
@@ -19,7 +20,7 @@ class P2PTClient extends P2PT {
     get discovered() {
         return this.#discovered || {};
     }
-    constructor(peerId, networkVersion = 'leofcoin:peach', stars = ['wss://peach.leofcoin.org']) {
+    constructor(peerId, networkVersion = 'leofcoin:peach', stars = networks.leofcoin.peach.stars) {
         // @ts-ignore
         super(stars, networkVersion, fromBase58(peerId));
         this.stars = stars;
