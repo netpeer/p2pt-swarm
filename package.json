@@ -4,6 +4,10 @@
   "description": "",
   "version": "1.3.4",
   "browser": "./exports/browser/client.js",
+  "files": [
+    "exports",
+    "run-server.js"
+  ],
   "exports": {
     ".": {
       "import": "./exports/client.js",
