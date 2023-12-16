@@ -30,15 +30,18 @@ class LittlePubSub {
         if (this.subscribers[event].handlers.length === 0)
             delete this.subscribers[event];
     }
-    publish(event, change) {
+    publish(event, value) {
+        // always set value even when having no subscribers
         if (!this.hasSubscribers(event))
-            return;
-        if (this.verbose || this.subscribers[event]?.value !== change) {
-            this.subscribers[event].value = change;
-            this.subscribers[event].handlers.forEach((handler) => {
-                handler(change, this.subscribers[event].value);
-            });
-        }
+            this.subscribers[event] = {
+                handlers: []
+            };
+        const oldValue = this.subscribers[event]?.value;
+        this.subscribers[event].value = value;
+        if (this.verbose || oldValue !== value)
+            for (const handler of this.subscribers[event].handlers) {
+                handler(value, oldValue);
+            }
     }
     once(event) {
         return new Promise((resolve) => {
@@ -197,20 +200,20 @@ const base = (ALPHABET) => {
 const ALPHABET$3 = '0123456789ABCDEF';
 base(ALPHABET$3);
 
-const ALPHABET$2 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-const ALPHABET_HEX$1 = '0123456789ABCDEFGHIJKLMNOPQRSTUV';
+const ALPHABET$2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+const ALPHABET_HEX$1 = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 base(ALPHABET$2);
 base(ALPHABET_HEX$1);
 
-var ALPHABET$1 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-var ALPHABET_HEX = '0123456789ABCDEFGHJKLMNPQRSTUVabcdefghijklmnopqrstuv';
-var base58 = base(ALPHABET$1);
-var base58Hex = base(ALPHABET_HEX);
-var encode = base58.encode;
-var decode = base58.decode;
-var encodeHex = base58Hex.encode;
-var decodeHex = base58Hex.decode;
-var isBase58 = function (string) {
+const ALPHABET$1 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const ALPHABET_HEX = "0123456789ABCDEFGHJKLMNPQRSTUVabcdefghijklmnopqrstuv";
+const base58 = base(ALPHABET$1);
+const base58Hex = base(ALPHABET_HEX);
+const encode = base58.encode;
+const decode = base58.decode;
+const encodeHex = base58Hex.encode;
+const decodeHex = base58Hex.decode;
+const isBase58 = (string) => {
     try {
         decode(string);
         return true;
@@ -219,7 +222,7 @@ var isBase58 = function (string) {
         return false;
     }
 };
-var isBase58Hex = function (string) {
+const isBase58Hex = (string) => {
     try {
         decodeHex(string);
         return true;
@@ -228,22 +231,30 @@ var isBase58Hex = function (string) {
         return false;
     }
 };
-var whatType = function (string) {
+const whatType = (string) => {
     try {
         decode(string);
-        return 'base58';
+        return "base58";
     }
     catch (e) {
         try {
             decodeHex(string);
-            return 'base58Hex';
+            return "base58Hex";
         }
-        catch (_a) {
+        catch {
             return;
         }
     }
 };
-var base58$1 = { encode: encode, decode: decode, isBase58: isBase58, isBase58Hex: isBase58Hex, encodeHex: encodeHex, decodeHex: decodeHex, whatType: whatType };
+var base58$1 = {
+    encode,
+    decode,
+    isBase58,
+    isBase58Hex,
+    encodeHex,
+    decodeHex,
+    whatType,
+};
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 base(ALPHABET);
@@ -394,18 +405,20 @@ let P2PT$1 = class P2PT extends EventEmitter {
     infoHash;
     _infoHashBuffer;
     _infoHashBinary;
+    #maxPeerChannels;
     /**
      *
      * @param array announceURLs List of announce tracker URLs
      * @param string identifierString Identifier used to discover peers in the network
      */
-    constructor(announceURLs = [], identifierString = '', peerId) {
+    constructor(announceURLs = [], identifierString = '', peerId, maxPeerChannels = 5) {
         super();
         this.announceURLs = announceURLs;
         this.trackers = {};
         this.peers = {};
         this.msgChunks = {};
         this.responseWaiting = {};
+        this.#maxPeerChannels = maxPeerChannels;
         if (identifierString) {
             this.setIdentifier(identifierString);
         }
@@ -424,83 +437,94 @@ let P2PT$1 = class P2PT extends EventEmitter {
         this._infoHashBuffer = hex2arr(this.infoHash);
         this._infoHashBinary = hex2bin(this.infoHash);
     }
+    #onPeerConnect = (peer) => {
+        let newpeer = false;
+        /**
+         * peer connected or reconnected
+         * Sometimes peers reconnect so need to handle the newpeer here
+         */
+        if (!this.peers[peer.id]) {
+            newpeer = true;
+            this.peers[peer.id] = {};
+            if (!this.responseWaiting[peer.id])
+                this.responseWaiting[peer.id] = {};
+        }
+        /**
+         * Multiple data channels to one peer is possible
+         * The `peer` object actually refers to a peer with a data channel. Even though it may have same `id` (peerID) property, the data channel will be different. Different trackers giving the same "peer" will give the `peer` object with different channels.
+         * We will store all channels as backups in case any one of them fails
+         * A peer is removed if all data channels become unavailable
+         */
+        for (const channelName in this.peers[peer.id]) {
+            if (!this.peers[peer.id][channelName].connected) {
+                this.peers[peer.id][channelName].destroy();
+            }
+        }
+        if (Object.keys(this.peers[peer.id]).length < this.#maxPeerChannels)
+            this.peers[peer.id][peer.channelName] = peer;
+        else
+            peer.destroy();
+        if (newpeer) {
+            this.emit('peerconnect', peer);
+        }
+    };
+    #onPeerData = (peer, data) => {
+        this.emit('data', peer, data);
+        data = data.toString();
+        debug('got a message from ' + peer.id);
+        if (data[0] === JSON_MESSAGE_IDENTIFIER) {
+            try {
+                data = JSON.parse(data.slice(1));
+                // A respond function
+                peer.respond = this._peerRespond(peer, data.id);
+                let msg = this._chunkHandler(data);
+                // msg fully retrieved
+                if (msg !== false) {
+                    if (data.o) {
+                        msg = JSON.parse(msg);
+                    }
+                    /**
+                     * If there's someone waiting for a response, call them
+                     */
+                    if (this.responseWaiting[peer.id] && this.responseWaiting[peer.id][data.id]) {
+                        this.responseWaiting[peer.id][data.id]([peer, msg]);
+                        delete this.responseWaiting[peer.id][data.id];
+                    }
+                    else {
+                        this.emit('msg', peer, msg, data.id, data.from);
+                    }
+                    this._destroyChunks(data.id);
+                }
+            }
+            catch (e) {
+                console.log(e);
+            }
+        }
+    };
+    #onPeer = (peer) => {
+        peer.on('connect', () => this.#onPeerConnect(peer));
+        peer.on('data', (data) => this.#onPeerData(peer, data));
+        peer.on('error', (err) => {
+            this._removePeer(peer);
+            debug('Error in connection : ' + err);
+        });
+        peer.on('close', () => {
+            this._removePeer(peer);
+            debug('Connection closed with ' + peer.id);
+        });
+    };
     /**
      * Connect to network and start discovering peers
      */
     start() {
-        this.on('peer', peer => {
-            peer.on('connect', () => {
-                let newpeer = false;
-                /**
-                 * peer connected or reconnected
-                 * Sometimes peers reconnect so need to handle the newpeer here
-                 */
-                if (!this.peers[peer.id]) {
-                    newpeer = true;
-                    this.peers[peer.id] = {};
-                    if (!this.responseWaiting[peer.id])
-                        this.responseWaiting[peer.id] = {};
-                }
-                /**
-                 * Multiple data channels to one peer is possible
-                 * The `peer` object actually refers to a peer with a data channel. Even though it may have same `id` (peerID) property, the data channel will be different. Different trackers giving the same "peer" will give the `peer` object with different channels.
-                 * We will store all channels as backups in case any one of them fails
-                 * A peer is removed if all data channels become unavailable
-                 */
-                this.peers[peer.id][peer.channelName] = peer;
-                if (newpeer) {
-                    this.emit('peerconnect', peer);
-                }
-            });
-            peer.on('data', data => {
-                this.emit('data', peer, data);
-                data = data.toString();
-                debug('got a message from ' + peer.id);
-                if (data[0] === JSON_MESSAGE_IDENTIFIER) {
-                    try {
-                        data = JSON.parse(data.slice(1));
-                        // A respond function
-                        peer.respond = this._peerRespond(peer, data.id);
-                        let msg = this._chunkHandler(data);
-                        // msg fully retrieved
-                        if (msg !== false) {
-                            if (data.o) {
-                                msg = JSON.parse(msg);
-                            }
-                            /**
-                             * If there's someone waiting for a response, call them
-                             */
-                            if (this.responseWaiting[peer.id] && this.responseWaiting[peer.id][data.id]) {
-                                this.responseWaiting[peer.id][data.id]([peer, msg]);
-                                delete this.responseWaiting[peer.id][data.id];
-                            }
-                            else {
-                                this.emit('msg', peer, msg, data.id, data.from);
-                            }
-                            this._destroyChunks(data.id);
-                        }
-                    }
-                    catch (e) {
-                        console.log(e);
-                    }
-                }
-            });
-            peer.on('error', err => {
-                this._removePeer(peer);
-                debug('Error in connection : ' + err);
-            });
-            peer.on('close', () => {
-                this._removePeer(peer);
-                debug('Connection closed with ' + peer.id);
-            });
-        });
+        this.on('peer', this.#onPeer);
         // Tracker responded to the announce request
-        this.on('update', response => {
+        this.on('update', (response) => {
             const tracker = this.trackers[this.announceURLs.indexOf(response.announce)];
             this.emit('trackerconnect', tracker, this.getTrackerStats());
         });
         // Errors in tracker connection
-        this.on('warning', err => {
+        this.on('warning', (err) => {
             this.emit('trackerwarning', err, this.getTrackerStats());
         });
         this._fetchPeers();
@@ -538,7 +562,10 @@ let P2PT$1 = class P2PT extends EventEmitter {
         if (!this.peers[peer.id]) {
             return false;
         }
-        delete this.peers[peer.id][peer.channelName];
+        if (this.peers[peer.id][peer.channelName]) {
+            this.peers[peer.id][peer.channelName].destroy();
+            delete this.peers[peer.id][peer.channelName];
+        }
         // All data channels are gone. Peer lost
         if (Object.keys(this.peers[peer.id]).length === 0) {
             this.emit('peerclose', peer);
@@ -592,8 +619,13 @@ let P2PT$1 = class P2PT extends EventEmitter {
                  * Array should atleast have one channel, otherwise peer connection is closed
                  */
                 if (!peer.connected) {
-                    for (const index in this.peers[peer.id]) {
+                    for (const index in { ...this.peers[peer.id] }) {
                         peer = this.peers[peer.id][index];
+                        /**
+                         * directly cleanup channels
+                         */
+                        if (!peer.connected)
+                            this._removePeer(peer);
                         if (peer.connected)
                             break;
                     }
@@ -614,7 +646,7 @@ let P2PT$1 = class P2PT extends EventEmitter {
      * Request more peers
      */
     requestMorePeers() {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             for (const key in this.trackers) {
                 this.trackers[key].announce(this._defaultAnnounceOpts());
             }
@@ -656,7 +688,7 @@ let P2PT$1 = class P2PT extends EventEmitter {
      * @param integer msgID Message ID
      */
     _peerRespond(peer, msgID) {
-        return msg => {
+        return (msg) => {
             return this.send(peer, msg, msgID);
         };
     }
@@ -690,7 +722,7 @@ let P2PT$1 = class P2PT extends EventEmitter {
      */
     _defaultAnnounceOpts(options = {}) {
         if (options.numwant === undefined)
-            options.numwant = 50;
+            options.numwant = 5;
         if (options.uploaded === undefined)
             options.uploaded = 0;
         if (options.downloaded === undefined)
@@ -1158,7 +1190,7 @@ class WebSocketTracker extends Tracker {
     if (data.complete != null) {
       const response = Object.assign({}, data, {
         announce: this.announceUrl,
-        infoHash: data.info_hash
+        infoHash: common.binaryToHex(data.info_hash)
       });
       this.client.emit('update', response);
     }
